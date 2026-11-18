@@ -23,11 +23,15 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install Android SDK 34
-        run: yes | sdkmanager --install "platforms;android-34" "build-tools;34.0.0" > /dev/null || true
+      - name: Prepare Android SDK
+        run: |
+          SDK=$(find "$ANDROID_HOME/cmdline-tools" -name sdkmanager -type f 2>/dev/null | head -1)
+          if [ -n "$SDK" ]; then
+            chmod +x "$SDK" || true
+            yes | "$SDK" --licenses > /dev/null 2>&1 || true
+            yes | "$SDK" --install "platforms;android-34" "build-tools;34.0.0" > /dev/null 2>&1 || true
+          fi
+          echo "ANDROID_HOME=$ANDROID_HOME"
 
       - name: Set up Gradle 8.2
         uses: gradle/actions/setup-gradle@v4
